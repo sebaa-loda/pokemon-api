@@ -44,8 +44,8 @@ const getPokemonsByName = async (req, res) => {
     getPokemons(req, res);
   } else {
     try {
-      let pokemons = await Pokemon.findOne({
-        where: { name: { [Op.iRegexp]: `${name}` } },
+      let pokemons = await Pokemon.findAll({
+        where: { name: { [Op.iRegexp]: `${name}` } }, include: [{model: Type, attributes: ["name"] , through: {attributes: []}}]
       });
       if (!pokemons) {
         const { data } = await axios.get(`${URL}/${name.toLowerCase()}`);
@@ -79,7 +79,7 @@ const getPokemonsById = async (req, res) => {
 
   try {
     if (validateUuid(id)) {
-      const pokemonDb = await Pokemon.findByPk(id);
+      const pokemonDb = await Pokemon.findByPk(id, {include : [{model: Type, attributes: ["name"]}]});
       return res.status(200).json(pokemonDb);
     } else {
       const { data } = await axios.get(`${URL}/${id}`);
@@ -135,6 +135,9 @@ const postPokemons = async (req, res) => {
       healthPoints,
       attack,
       defense,
+      speed,
+      height,
+      weight,
     });
 
     await newPokemon.addType(typeOfPokemon);
