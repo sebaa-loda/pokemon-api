@@ -8,7 +8,7 @@ const { getPokemonsDb } = require("../helpers/pokeDb");
 
 const getPokemons = async (req, res) => {
   try {
-    let { data } = await axios.get(`${URL}?limit=12`);
+    let { data } = await axios.get(`${URL}?limit=150`);
     let allPokemons = data.results;
     let pokemons = [];
     for (const pokemon of allPokemons) {
@@ -44,7 +44,7 @@ const getPokemonsByName = async (req, res) => {
     getPokemons(req, res);
   } else {
     try {
-      let pokemons = await Pokemon.findAll({
+      let pokemons = await Pokemon.findOne({
         where: { name: { [Op.iRegexp]: `${name}` } }, include: [{model: Type, attributes: ["name"] , through: {attributes: []}}]
       });
       if (!pokemons) {
@@ -67,7 +67,7 @@ const getPokemonsByName = async (req, res) => {
           return res.status(200).json([pokemon]);
         }
       }
-      return res.status(200).json(pokemons);
+      return res.status(200).json([pokemons]);
     } catch (error) {
       res.status(200).json([]);
     }
@@ -125,7 +125,7 @@ const postPokemons = async (req, res) => {
 
     const existPokemon = await Pokemon.findOne({ where: { name } });
     if (existPokemon) {
-      return res.status(200).send("this pokemon already exists");
+      return res.status(404).send("this pokemon already exists");
     }
 
     const typeOfPokemon = await Type.findAll({ where: { name: types } });
