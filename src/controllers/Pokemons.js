@@ -8,7 +8,7 @@ const { getPokemonsDb } = require("../helpers/pokeDb");
 
 const getPokemons = async (req, res) => {
   try {
-    let { data } = await axios.get(`${URL}?limit=150`);
+    let { data } = await axios.get(`${URL}?limit=84`);
     let allPokemons = data.results;
     let pokemons = [];
     for (const pokemon of allPokemons) {
@@ -27,7 +27,7 @@ const getPokemons = async (req, res) => {
         height: pokemon.height,
         weight: pokemon.weight,
         types: pokemon.types.map((e) => {
-          return {name : e.type.name}
+          return { name: e.type.name };
         }),
       };
     });
@@ -45,7 +45,10 @@ const getPokemonsByName = async (req, res) => {
   } else {
     try {
       let pokemons = await Pokemon.findOne({
-        where: { name: { [Op.iRegexp]: `${name}` } }, include: [{model: Type, attributes: ["name"] , through: {attributes: []}}]
+        where: { name: { [Op.iLike]: `${name}` } },
+        include: [
+          { model: Type, attributes: ["name"], through: { attributes: [] } },
+        ],
       });
       if (!pokemons) {
         const { data } = await axios.get(`${URL}/${name.toLowerCase()}`);
@@ -61,7 +64,7 @@ const getPokemonsByName = async (req, res) => {
             height: data.height,
             weight: data.weight,
             types: data.types.map((e) => {
-              return {name : e.type.name};
+              return { name: e.type.name };
             }),
           };
           return res.status(200).json([pokemon]);
@@ -69,7 +72,7 @@ const getPokemonsByName = async (req, res) => {
       }
       return res.status(200).json([pokemons]);
     } catch (error) {
-      res.status(200).json([]);
+      res.status(500).json({ error: "searchbar error" });
     }
   }
 };
@@ -79,7 +82,9 @@ const getPokemonsById = async (req, res) => {
 
   try {
     if (validateUuid(id)) {
-      const pokemonDb = await Pokemon.findByPk(id, {include : [{model: Type, attributes: ["name"]}]});
+      const pokemonDb = await Pokemon.findByPk(id, {
+        include: [{ model: Type, attributes: ["name"] }],
+      });
       return res.status(200).json(pokemonDb);
     } else {
       const { data } = await axios.get(`${URL}/${id}`);
@@ -93,7 +98,7 @@ const getPokemonsById = async (req, res) => {
         height: data.height,
         weight: data.weight,
         types: data.types.map((e) => {
-          return {name : e.type.name};
+          return { name: e.type.name };
         }),
       };
       return res.status(200).json(apiPokemon);
