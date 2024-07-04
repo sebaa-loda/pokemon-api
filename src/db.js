@@ -5,14 +5,18 @@ const path = require('path');
 const { type } = require('os');
 const {DB_URL} = process.env;
 
-const sequelize = new Sequelize(
-   DB_URL,
-   {
-      logging: false, // set to console.log to see the raw SQL queries
-      native: false, // lets Sequelize know we can use pg-native for ~30% more speed
-      dialect: "postgres"
-   }
-);
+const sequelize = new Sequelize(DB_URL, {
+   dialect: "postgres",
+   protocol: "postgres",
+   dialectOptions: {
+       ssl: {
+           require: true,
+           rejectUnauthorized: false // This can be adjusted based on your security requirements
+       }
+   },
+   logging: false, 
+   native: false
+});
 const basename = path.basename(__filename);
 
 const modelDefiners = [];
